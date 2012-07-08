@@ -9,7 +9,7 @@ via Dropbox or other file synchronization services.
 on the system for the presence of a trigger file or directory.
 If a trigger is found, `firedown` issues a shutdown.
 
-The monitored directory might be synchronized via a remote service
+The monitored directory might be synchronized via remote services
 like Dropbox or Ubuntu One, thus enabling a remotely triggered
 shutdown of the system.
 
