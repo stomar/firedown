@@ -16,35 +16,35 @@ shutdown of the system.
 Usage
 -----
 
-1. Set up a cron job on the machine(s) you might want to bring down
-   remotely, specifying the directories that should be monitored
-   (root privileges are needed).
+1.  Set up a cron job on the machine(s) you might want to bring down
+    remotely, specifying the directories that should be monitored
+    (root privileges are needed).
 
-   For example, to check every minute for the trigger file,
-   include a line similar to this in `/etc/crontab`:
+    For example, to check every minute for the trigger file,
+    include a line similar to this in `/etc/crontab`:
 
-       * *   * * *   root   firedown -l /path/to/Dropbox /path/to/Ubuntu\ One
+        * *   * * *   root   firedown -l /path/to/Dropbox /path/to/Ubuntu\ One
 
-   Alternatively, start `firedown` as a daemon process
-   (again with root privileges):
+    Alternatively, start `firedown` as a daemon process
+    (again with root privileges):
 
-       firedown --daemon /path/to/Dropbox /path/to/Ubuntu\ One
+        firedown --daemon /path/to/Dropbox /path/to/Ubuntu\ One
 
-   (Depending on the search path for root on your machine and on how you
-   installed `firedown`, you might need to invoke `firedown` using it's
-   full path.)
+    (Depending on the search path for root on your machine and on how you
+    installed `firedown`, you might need to invoke `firedown` using it's
+    full path.)
 
-2. Create `firedown.host` as empty trigger file or as empty directory
-   in any of the monitored directories, where `host` is the hostname
-   of the system you want to bring down.
-   (With Dropbox this can be done over the web interface.)
+2.  Create `firedown.host` as empty trigger file or as empty directory
+    in any of the monitored directories, where `host` is the hostname
+    of the system you want to bring down.
+    (With Dropbox this can be done over the web interface.)
 
-3. As soon as a trigger file is detected in any of the monitored
-   directories, a shutdown with a delay of 60 seconds will be issued.
+3.  As soon as a trigger file is detected in any of the monitored
+    directories, a shutdown with a delay of 60 seconds will be issued.
 
-   Note: To prevent shutdowns from being triggered repeatedly by the
-   same file, the system will only be brought down when the trigger
-   previously has been removed successfully.
+    Note: To prevent shutdowns from being triggered repeatedly by the
+    same file, the system will only be brought down when the trigger
+    previously has been removed successfully.
 
 If run as a daemon, `firedown` writes messages to `/var/log/firedown.log`.
 In non-daemon mode use the `--log` or `-l` option to write messages
