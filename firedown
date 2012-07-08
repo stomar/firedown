@@ -1,0 +1,298 @@
+#!/usr/bin/ruby -w
+# == Name
+#
+# firedown - file-based (remote) shutdown
+#
+# == Synopsis
+#
+#    firedown [options] directories
+#
+# == Description
+#
+# +firedown+ is a command line tool
+# that enables a remote shutdown of a Linux system
+# via Dropbox or other file synchronization services.
+#
+# +firedown+ monitors a specified directory (or several directories)
+# on the system for the presence of a trigger file or directory.
+# If a trigger is found, +firedown+ issues a shutdown.
+#
+# The monitored directory might be synchronized via a remote service
+# like Dropbox or Ubuntu One, thus enabling a remotely triggered
+# shutdown of the system.
+#
+# == Options
+#
+# -d, --[no-]daemon:: Detach and run in the background (implies --log).
+#                     Checks for a trigger file every 15 seconds.
+#
+# -l, --[no-]log:: Write messages to log file (\`/var/log/firedown.log') instead of stderr.
+#
+# -n, --no-act:: Do not bring down the system.
+#                Detects, reports, and removes trigger files, but does not issue a shutdown.
+#
+# == See also
+#
+# The full documentation for +firedown+ is available on the
+# project home page: <https://github.com/stomar/firedown/>
+#
+# == Author
+#
+# Copyright (C) 2012 Marcus Stollsteimer
+#
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+#
+
+require 'optparse'
+require 'socket'
+
+# This module contains the classes for the +firedown+ tool.
+module Firedown
+
+  PROGNAME  = 'firedown'
+  VERSION   = '0.0.1'
+  DATE      = '2012-07-07'
+  HOMEPAGE  = 'https://github.com/stomar/firedown/'
+
+  COPYRIGHT = "Copyright (C) 2012 Marcus Stollsteimer.\n" +
+              "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n" +
+              "This is free software: you are free to change and redistribute it.\n" +
+              "There is NO WARRANTY, to the extent permitted by law."
+
+  # Parser for the command line options.
+  # The class method parse! does the job.
+  class Optionparser
+
+    # Parses the command line options from +argv+.
+    # (+argv+ is cleared).
+    # Might print out help or version information.
+    #
+    # +argv+ - array with the command line options
+    #
+    # Returns a hash containing the option parameters.
+    def self.parse!(argv)
+
+      options = {
+        :daemon_mode => false,
+        :directories => nil,
+        :log         => false,
+        :log_file    => '/var/log/firedown.log',
+        :simulate    => false
+      }
+
+      opt_parser = OptionParser.new do |opt|
+        opt.banner = "Usage: #{PROGNAME} [options] directories"
+        opt.separator ''
+        opt.separator 'firedown is a command line tool'
+        opt.separator 'that enables a remote shutdown of a Linux system'
+        opt.separator 'via Dropbox or other file synchronization services.'
+        opt.separator ''
+        opt.separator 'firedown monitors a specified directory (or several directories)'
+        opt.separator 'on the system for the presence of a trigger file or directory.'
+        opt.separator 'If a trigger is found, firedown issues a shutdown.'
+        opt.separator ''
+        opt.separator 'The monitored directory might be synchronized via a remote service'
+        opt.separator 'like Dropbox or Ubuntu One, thus enabling a remotely triggered'
+        opt.separator 'shutdown of the system.'
+        opt.separator ''
+        opt.separator 'Options'
+        opt.separator ''
+
+        # process --version and --help first,
+        # exit successfully (GNU Coding Standards)
+        opt.on_tail('-h', '--help', 'Prints a brief help message and exits.') do
+          puts opt_parser
+          puts "\nReport bugs on the #{PROGNAME} home page: <#{HOMEPAGE}>"
+          exit
+        end
+
+        opt.on_tail('-v', '--version',
+                    'Prints a brief version information and exits.') do
+          puts "#{PROGNAME} #{VERSION}"
+          puts COPYRIGHT
+          exit
+        end
+
+        opt.on('-d', '--[no-]daemon',
+               'Detach and run in the background (implies --log).',
+               'Checks for a trigger file every 15 seconds.') do |d|
+          options[:daemon_mode] = d
+        end
+
+        opt.on('-l', '--[no-]log',
+               "Write messages to log file (`#{options[:log_file]}') instead of stderr.") do |l|
+          options[:log] = l
+        end
+
+        opt.on('-n', '--no-act',
+               'Do not bring down the system.',
+               'Detects, reports, and removes trigger files, but does not issue a shutdown.') do
+          options[:simulate] = true
+        end
+
+        opt.separator ''
+      end
+      opt_parser.parse!(argv)
+
+      options[:log] = true  if options[:daemon_mode]
+
+      # only directories should be left in argv
+      argv.delete('')
+      raise(ArgumentError, 'wrong number of arguments')  if argv.size < 1
+
+      options[:directories] = argv.pop(argv.size).map {|dir| File.expand_path(dir) }
+
+      options
+    end
+  end
+
+  # Helper methods.
+  module Helpers
+
+    # Returns a formatted string for a Time object.
+    def self.time_to_string(time)
+      time_string = if RUBY_VERSION =~ /1\.8/
+                      time.strftime('%Y-%m-%d %H:%M:%S ') << time.zone
+                    else
+                      time.strftime('%Y-%m-%d %H:%M:%S %Z')
+                    end
+
+      time_string
+    end
+  end
+
+
+  # The main program. It's run! method is called
+  # if the script is run from the command line.
+  # It parses the command line arguments and does the job.
+  class Application
+
+    ERRORCODE = {:general => 1, :usage => 2}
+
+    def initialize
+      # parse options
+      begin
+        options = Optionparser.parse!(ARGV)
+      rescue => e
+        usage_fail(e.message)
+      end
+
+      @simulate = options[:simulate]
+      @daemon_mode = options[:daemon_mode]
+      @log_to_file = options[:log]
+      @log_file = options[:log_file]
+
+      # make sure log file exists and is writable by user
+      if @log_to_file
+        begin
+          File.open(@log_file, 'a') {}
+        rescue
+          warn "Log file `#{@log_file}' not writable, stderr is used instead."
+          @log_to_file = false
+        end
+      end
+
+      @hostname = Socket::gethostname
+      @hostname = 'all'  if (@hostname.empty? or @hostname.nil?)
+
+      @trigger_files = options[:directories].map {|dir| "#{dir}/firedown.#{@hostname}" }
+
+      @sleep_time = 15  # checks every ... seconds
+    end
+
+    # The main program.
+    def run!
+      if @daemon_mode
+        daemonize do
+          log 'firedown daemon has been launched.'
+          log "monitoring `#{@trigger_files.join("', `")}'..."
+          loop do
+            check_and_act
+            sleep @sleep_time
+          end
+        end
+        warn 'firedown daemon has been launched.'
+        warn "monitoring `#{@trigger_files.join("', `")}'..."
+      else
+        check_and_act
+      end
+    end
+
+    # Checks for trigger files and handles them.
+    def check_and_act
+      shutdown_triggered = false
+
+      @trigger_files.each do |trigger|
+        next  unless File.exist?(trigger)
+        log "`#{trigger}' detected."
+
+        begin  # just in case...
+          if File.directory?(trigger)
+            Dir.rmdir(trigger)  if Dir.entries(trigger).join == '...'  # empty
+          else
+            File.delete(trigger)  if File.stat(trigger).size == 0
+          end
+        rescue
+        end
+
+        if File.exist?(trigger)
+          log "trigger invalid (`#{trigger}' could not be removed)."
+        else
+          shutdown_triggered = true
+        end
+      end
+
+      if shutdown_triggered
+        log(@simulate ? 'This is a simulated shutdown!' : 'Shutting down in 60 seconds!')
+        system('shutdown -h +1')  unless @simulate
+      end
+    end
+
+    # Daemonizes a block (see 'Beginning Ruby' by Peter Cooper).
+    def daemonize
+      fork do
+        Process.setsid
+        exit  if fork
+        Dir.chdir('/')
+        STDIN.reopen('/dev/null')
+        STDOUT.reopen('/dev/null', 'a')
+        STDERR.reopen('/dev/null', 'a')
+        trap("TERM") do
+          log 'firedown daemon has been stopped.'
+          exit
+        end
+        yield
+      end
+    end
+
+    # Writes a log entry with time stamp (to stderr or to file).
+    def log(message)
+      message = Helpers::time_to_string(Time.now) << ': ' << message
+      if @log_to_file
+        File.open(@log_file, 'a') {|f| f.puts message }
+      else
+        warn message
+      end
+    end
+
+    # Prints an error message and exits.
+    def general_fail(message) # :nodoc:
+      warn "#{PROGNAME}: #{message}"
+      exit ERRORCODE[:general]
+    end
+
+    # Prints an error message and a short help information, then exits.
+    def usage_fail(message) # :nodoc:
+      warn "#{PROGNAME}: #{message}"
+      warn "Use `#{PROGNAME} --help' for valid options."
+      exit ERRORCODE[:usage]
+    end
+  end
+
+### call main method only if called on command line
+
+if __FILE__ == $0
+  Application.new.run!
+end
+
+end  # module
