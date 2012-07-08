@@ -17,6 +17,11 @@ If a trigger is found, firedown issues a shutdown.
 The monitored directory might be synchronized via remote services
 like Dropbox or Ubuntu One, thus enabling a remotely triggered
 shutdown of the system.
+.PP
+Bring down the system by creating `firedown.host'
+as empty trigger file or as empty directory in any of the
+monitored directories, where `host' is the hostname
+of the system you want to bring down.
 .SH OPTIONS
 .TP
 \fB\-d\fR, \fB\-\-[no\-]daemon\fR

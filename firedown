@@ -21,6 +21,11 @@
 # like Dropbox or Ubuntu One, thus enabling a remotely triggered
 # shutdown of the system.
 #
+# Bring down the system by creating +firedown.host+
+# as empty trigger file or as empty directory in any of the
+# monitored directories, where +host+ is the hostname
+# of the system you want to bring down.
+#
 # == Options
 #
 # -d, --[no-]daemon:: Detach and run in the background (implies --log).
@@ -94,6 +99,11 @@ module Firedown
         opt.separator 'The monitored directory might be synchronized via remote services'
         opt.separator 'like Dropbox or Ubuntu One, thus enabling a remotely triggered'
         opt.separator 'shutdown of the system.'
+        opt.separator ''
+        opt.separator "Bring down the system by creating `firedown.host'"
+        opt.separator 'as empty trigger file or as empty directory in any of the'
+        opt.separator "monitored directories, where `host' is the hostname"
+        opt.separator 'of the system you want to bring down.'
         opt.separator ''
         opt.separator 'Options'
         opt.separator ''
