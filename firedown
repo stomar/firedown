@@ -81,7 +81,7 @@ module Firedown
         :daemon_mode => false,
         :directories => nil,
         :log         => false,
-        :log_file    => '/var/log/firedown.log',
+        :log_file    => "/var/log/#{PROGNAME}.log",
         :simulate    => false
       }
 
@@ -205,7 +205,7 @@ module Firedown
       @hostname = Socket::gethostname
       @hostname = 'all'  if (@hostname.empty? or @hostname.nil?)
 
-      @trigger_files = options[:directories].map {|dir| "#{dir}/firedown.#{@hostname}" }
+      @trigger_files = options[:directories].map {|dir| "#{dir}/#{PROGNAME}.#{@hostname}" }
 
       @sleep_time = 15  # checks every ... seconds
     end
@@ -213,7 +213,7 @@ module Firedown
     # The main program.
     def run!
       if @daemon_mode
-        launch_message = 'firedown daemon has been launched'
+        launch_message = "#{PROGNAME} daemon has been launched"
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
           log launch_message
@@ -270,7 +270,7 @@ module Firedown
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
         trap("TERM") do
-          log 'firedown daemon has been stopped.'
+          log "#{PROGNAME} daemon has been stopped."
           exit
         end
         yield
