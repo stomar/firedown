@@ -254,9 +254,13 @@ module Firedown
         end
       end
 
-      if shutdown_triggered
-        log(@simulate ? 'This is a simulated shutdown!' : 'Shutting down in 60 seconds!')
-        system('shutdown -h +1')  unless @simulate
+      return  unless shutdown_triggered
+
+      if @simulate
+        log 'This is a simulated shutdown!'
+      else
+        log 'Shutting down in 60 seconds!'
+        system('shutdown -h +1')
       end
     end
 
