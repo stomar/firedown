@@ -213,15 +213,17 @@ module Firedown
     # The main program.
     def run!
       if @daemon_mode
+        launch_message = 'firedown daemon has been launched'
+        launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
-          log 'firedown daemon has been launched.'
+          log launch_message
           log "monitoring `#{@trigger_files.join("', `")}'..."
           loop do
             check_and_act
             sleep @sleep_time
           end
         end
-        warn 'firedown daemon has been launched.'
+        warn launch_message
         warn "monitoring `#{@trigger_files.join("', `")}'..."
       else
         check_and_act
