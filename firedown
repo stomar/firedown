@@ -218,7 +218,7 @@ module Firedown
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
           info launch_message
-          info "monitoring `#{@trigger_files.join("', `")}'..."
+          info "Monitoring `#{@trigger_files.join("', `")}'..."
           loop do
             check_and_act
             sleep @sleep_time
@@ -250,7 +250,7 @@ module Firedown
         end
 
         if File.exist?(trigger)
-          info "trigger invalid (`#{trigger}' could not be removed)."
+          info "Trigger invalid (`#{trigger}' could not be removed)."
         else
           shutdown_triggered = true
         end
@@ -275,7 +275,7 @@ module Firedown
         STDIN.reopen('/dev/null')
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
-        trap("TERM") do
+        trap('TERM') do
           info "#{PROGNAME} daemon has been stopped."
           exit
         end
