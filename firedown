@@ -191,6 +191,7 @@ module Firedown
       @daemon_mode = options[:daemon_mode]
       @log_to_file = options[:log]
       @log_file = options[:log_file]
+      @logging_level = :info
 
       # make sure log file exists and is writable by user
       if @log_to_file
@@ -216,8 +217,8 @@ module Firedown
         launch_message = "#{PROGNAME} daemon has been launched"
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
-          log launch_message
-          log "monitoring `#{@trigger_files.join("', `")}'..."
+          info launch_message
+          info "monitoring `#{@trigger_files.join("', `")}'..."
           loop do
             check_and_act
             sleep @sleep_time
@@ -232,11 +233,12 @@ module Firedown
 
     # Checks for trigger files and handles them.
     def check_and_act
+      debug 'Checking for trigger files.'
       shutdown_triggered = false
 
       @trigger_files.each do |trigger|
         next  unless File.exist?(trigger)
-        log "`#{trigger}' detected."
+        info "`#{trigger}' detected."
 
         begin  # just in case...
           if File.directory?(trigger)
@@ -248,7 +250,7 @@ module Firedown
         end
 
         if File.exist?(trigger)
-          log "trigger invalid (`#{trigger}' could not be removed)."
+          info "trigger invalid (`#{trigger}' could not be removed)."
         else
           shutdown_triggered = true
         end
@@ -257,9 +259,9 @@ module Firedown
       return  unless shutdown_triggered
 
       if @simulate
-        log 'This is a simulated shutdown!'
+        info 'This is a simulated shutdown!'
       else
-        log 'Shutting down in 60 seconds!'
+        info 'Shutting down in 60 seconds!'
         system('shutdown -h +1')
       end
     end
@@ -274,7 +276,7 @@ module Firedown
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
         trap("TERM") do
-          log "#{PROGNAME} daemon has been stopped."
+          info "#{PROGNAME} daemon has been stopped."
           exit
         end
         yield
@@ -289,6 +291,16 @@ module Firedown
       else
         warn message
       end
+    end
+
+    # Logs an info message.
+    def info(message)
+      log message
+    end
+
+    # Logs a debug message.
+    def debug(message)
+      log message  if @logging_level == :debug
     end
 
     # Prints an error message and exits.
