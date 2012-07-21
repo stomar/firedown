@@ -279,6 +279,17 @@ module Firedown
           info "#{PROGNAME} daemon has been stopped."
           exit
         end
+        trap('USR1') do
+          message = "#{PROGNAME} running" << (@simulate ? ' in no-act mode.' : '.')
+          info message
+          @logging_level = case @logging_level
+                           when :debug
+                             :info
+                           when :info
+                             :debug
+                           end
+          info "Logging level changed to `#{@logging_level}'."
+        end
         yield
       end
     end
