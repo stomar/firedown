@@ -156,8 +156,53 @@ module Firedown
     end
   end
 
-  # Helper methods.
-  module Helpers
+
+  # Class for logging messages.
+  #
+  # Create a new logger with
+  #   logger = Logger.new(device)
+  # where +device+ is a path or <tt>'STDERR'</tt>.
+  #
+  # Log an info or debug message with
+  #   logger.info  'Info message.'
+  #   logger.debug 'Debug message.'
+  #
+  # Default logging level is :info,
+  # change to :debug with
+  #   logger.level = :debug
+  class Logger
+
+    attr_accessor :level
+
+    def initialize(device)
+      if device == 'STDERR'
+        @log_to_file = false
+      else
+        @log_to_file = true
+        @log_file = device
+      end
+      @level = :info
+    end
+
+    # Writes a log entry with time stamp (to stderr or to file).
+    def add(message)
+      message = self.class.time_to_string(Time.now) << ': ' << message
+      if @log_to_file
+        File.open(@log_file, 'a') {|f| f.puts message }
+      else
+        warn message
+      end
+    end
+
+    # Logs an info message.
+    def info(message)
+      add message
+    end
+
+    # Logs a debug message.
+    def debug(message)
+      add message  if @level == :debug
+    end
 
     # Returns a formatted string for a Time object.
     def self.time_to_string(time)
@@ -203,6 +248,10 @@ module Firedown
         end
       end
 
+      device = @log_to_file ? @log_file : 'STDERR'
+      @logger = Logger.new(device)
+      @logger.level = @logging_level
+
       @hostname = Socket::gethostname
       @hostname = 'all'  if (@hostname.empty? or @hostname.nil?)
 
@@ -217,8 +266,8 @@ module Firedown
         launch_message = "#{PROGNAME} daemon has been launched"
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
-          info launch_message
-          info "Monitoring `#{@trigger_files.join("', `")}'..."
+          @logger.info launch_message
+          @logger.info "Monitoring `#{@trigger_files.join("', `")}'..."
           loop do
             check_and_act
             sleep @sleep_time
@@ -233,12 +282,12 @@ module Firedown
 
     # Checks for trigger files and handles them.
     def check_and_act
-      debug 'Checking for trigger files.'
+      @logger.debug 'Checking for trigger files.'
       shutdown_triggered = false
 
       @trigger_files.each do |trigger|
         next  unless File.exist?(trigger)
-        info "`#{trigger}' detected."
+        @logger.info "`#{trigger}' detected."
 
         begin  # just in case...
           if File.directory?(trigger)
@@ -250,7 +299,7 @@ module Firedown
         end
 
         if File.exist?(trigger)
-          info "Trigger invalid (`#{trigger}' could not be removed)."
+          @logger.info "Trigger invalid (`#{trigger}' could not be removed)."
         else
           shutdown_triggered = true
         end
@@ -259,9 +308,9 @@ module Firedown
       return  unless shutdown_triggered
 
       if @simulate
-        info 'This is a simulated shutdown!'
+        @logger.info 'This is a simulated shutdown!'
       else
-        info 'Shutting down in 60 seconds!'
+        @logger.info 'Shutting down in 60 seconds!'
         system('shutdown -h +1')
       end
     end
@@ -276,42 +325,22 @@ module Firedown
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
         trap('TERM') do
-          info "#{PROGNAME} daemon has been stopped."
+          @logger.info "#{PROGNAME} daemon has been stopped."
           exit
         end
         trap('USR1') do
           message = "#{PROGNAME} running" << (@simulate ? ' in no-act mode.' : '.')
-          info message
-          @logging_level = case @logging_level
-                           when :debug
-                             :info
-                           when :info
-                             :debug
-                           end
-          info "Logging level changed to `#{@logging_level}'."
+          @logger.info message
+          @logger.level = case @logger.level
+                          when :debug
+                            :info
+                          when :info
+                            :debug
+                          end
+          @logger.info "Logging level changed to `#{@logger.level}'."
         end
         yield
       end
-    end
-
-    # Writes a log entry with time stamp (to stderr or to file).
-    def log(message)
-      message = Helpers::time_to_string(Time.now) << ': ' << message
-      if @log_to_file
-        File.open(@log_file, 'a') {|f| f.puts message }
-      else
-        warn message
-      end
-    end
-
-    # Logs an info message.
-    def info(message)
-      log message
-    end
-
-    # Logs a debug message.
-    def debug(message)
-      log message  if @logging_level == :debug
     end
 
     # Prints an error message and exits.

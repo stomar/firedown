@@ -58,12 +58,55 @@ describe Firedown::Optionparser do
 end
 
 
-describe Firedown::Helpers do
+# monkey patch for Minitest:
+# use regexp instead of string for assert_output / must_output
+module MiniTest
+  module Assertions
+    def assert_output stdout = nil, stderr = nil
+      out, err = capture_io do
+        yield
+      end
+
+      stdout = /\A#{stdout}\Z/  if stdout.class == String
+      stderr = /\A#{stdout}\Z/  if stderr.class == String
+
+      y = assert_match stderr, err, "In stderr" if stderr
+      x = assert_match stdout, out, "In stdout" if stdout
+
+      (!stdout || x) && (!stderr || y)
+    end
+  end
+end
+
+describe Firedown::Logger do
+
+  before do
+    @logger = Firedown::Logger.new('STDERR')
+  end
 
   it 'should return the time in the correct format' do
     time = Time.utc(2012, 6, 26, 20, 0, 0)
-    time_string = Firedown::Helpers::time_to_string(time)
+    time_string = Firedown::Logger::time_to_string(time)
     time_string.must_equal '2012-06-26 20:00:00 UTC'
+  end
+
+  it 'should have a default level' do
+    @logger.level.must_equal :info
+  end
+
+  it 'can add a log message in the correct format' do
+    lambda { @logger.add 'Log message' }.must_output '', /[\d-]+ [\d:]+ \w+: Log message/  # patched
+  end
+
+  it 'logs info messages but not debug messages' do
+    lambda { @logger.info 'Info message' }.must_output '', /Info message/  # patched
+    lambda { @logger.debug 'Debug message' }.must_be_silent
+  end
+
+  it 'logs all messages in :debug mode' do
+    @logger.level = :debug
+    lambda { @logger.info  'Info message'  }.must_output '', /Info message/   # patched
+    lambda { @logger.debug 'Debug message' }.must_output '', /Debug message/  # patched
   end
 
 end
