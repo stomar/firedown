@@ -54,6 +54,9 @@ to the log file instead of stderr.
 For testing, use the `--no-act` or `-n` option and the shutdown will
 not be issued.
 
+In daemon mode, you can toggle logging to debug level by sending
+the `SIGUSR1` signal to the `firedown` process.
+
 Remarks
 -------
 

@@ -1,6 +1,16 @@
 [Name]
 firedown \- file-based (remote) shutdown
 
+[Files]
+.TP
+\fI/var/log/firedown.log\fR
+Default log file.
+
+[Signals]
+.TP
+\fISIGUSR1\fR
+Toggle logging to debug level and log some status information.
+
 [See also]
 The full documentation for firedown is available on
 the project home page: <https://github.com/stomar/firedown/>

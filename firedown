@@ -36,6 +36,14 @@
 # -n, --no-act:: Do not bring down the system.
 #                Detects, reports, and removes trigger files, but does not issue a shutdown.
 #
+# == Files
+#
+# +/var/log/firedown.log+:: Default log file.
+#
+# == Signals
+#
+# +SIGUSR1+:: Toggle logging to +debug+ level and log some status information.
+#
 # == See also
 #
 # The full documentation for +firedown+ is available on the
