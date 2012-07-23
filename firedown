@@ -33,6 +33,8 @@
 #
 # -l, --[no-]log:: Write messages to log file (\`/var/log/firedown.log') instead of stderr.
 #
+#     --logging-level LEVEL:: Set logging level (+info+, +debug+). Default is +info+.
+#
 # -n, --no-act:: Do not bring down the system.
 #                Detects, reports, and removes trigger files, but does not issue a shutdown.
 #
@@ -42,7 +44,7 @@
 #
 # == Signals
 #
-# +SIGUSR1+:: Toggle logging to +debug+ level.
+# +SIGUSR1+:: Toggle logging between +info+ and +debug+ level.
 #
 # == See also
 #
@@ -90,6 +92,7 @@ module Firedown
         :directories => nil,
         :log         => false,
         :log_file    => "/var/log/#{PROGNAME}.log",
+        :log_level   => :info,
         :simulate    => false
       }
 
@@ -135,6 +138,11 @@ module Firedown
                'Detach and run in the background (implies --log).',
                'Checks for a trigger file every 15 seconds.') do |d|
           options[:daemon_mode] = d
+        end
+
+        opt.on('--logging-level LEVEL', [:debug, :info],
+               "Set logging level (info, debug). Default is `info'.") do |l|
+          options[:log_level] = l
         end
 
         opt.on('-l', '--[no-]log',
@@ -244,7 +252,7 @@ module Firedown
       @daemon_mode = options[:daemon_mode]
       @log_to_file = options[:log]
       @log_file = options[:log_file]
-      @logging_level = :info
+      @logging_level = options[:log_level]
 
       # make sure log file exists and is writable by user
       if @log_to_file
@@ -276,6 +284,7 @@ module Firedown
         daemonize do
           @logger.info launch_message
           @logger.info "Monitoring `#{@trigger_files.join("', `")}'..."
+          @logger.info "Logging level is `#{@logger.level}'."
           loop do
             check_and_act
             sleep @sleep_time

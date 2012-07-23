@@ -51,11 +51,12 @@ If run as a daemon, `firedown` writes messages to `/var/log/firedown.log`.
 In non-daemon mode use the `--log` or `-l` option to write messages
 to the log file instead of stderr.
 
+You can set the logging level to `debug` with `--logging-level debug`.
+In daemon mode, you can toggle between `info` and `debug` level
+by sending the `SIGUSR1` signal to the `firedown` process.
+
 For testing, use the `--no-act` or `-n` option and the shutdown will
 not be issued.
-
-In daemon mode, you can toggle logging to debug level by sending
-the `SIGUSR1` signal to the `firedown` process.
 
 Remarks
 -------

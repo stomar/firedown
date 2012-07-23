@@ -14,6 +14,7 @@ describe Firedown::Optionparser do
       :directories => ['/home/sample_dir'],
       :log         => false,
       :log_file    => '/var/log/firedown.log',
+      :log_level   => :info,
       :simulate    => false
     }
     options.must_equal expected
@@ -40,6 +41,11 @@ describe Firedown::Optionparser do
     options[:log].must_equal false
     options = Firedown::Optionparser.parse!(['sample_dir', '-d', '--no-log'])
     options[:log].must_equal true
+  end
+
+  it 'should recognize the --logging-level option' do
+    options = Firedown::Optionparser.parse!(['sample_dir', '--logging-level', 'debug'])
+    options[:log_level].must_equal :debug
   end
 
   it 'should recognize the -n option' do

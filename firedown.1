@@ -28,6 +28,9 @@ of the system you want to bring down.
 Detach and run in the background (implies \fB\-\-log\fR).
 Checks for a trigger file every 15 seconds.
 .TP
+\fB\-\-logging\-level\fR LEVEL
+Set logging level (info, debug). Default is `info'.
+.TP
 \fB\-l\fR, \fB\-\-[no\-]log\fR
 Write messages to log file (`/var/log/firedown.log') instead of stderr.
 .TP
@@ -47,7 +50,7 @@ Default log file.
 .SH SIGNALS
 .TP
 \fISIGUSR1\fR
-Toggle logging to debug level.
+Toggle logging between \fIinfo\fP and \fIdebug\fP level.
 .SH "REPORTING BUGS"
 Report bugs on the firedown home page: <https://github.com/stomar/firedown/>
 .SH COPYRIGHT
