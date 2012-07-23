@@ -282,7 +282,7 @@ module Firedown
           end
         end
         warn launch_message
-        warn "monitoring `#{@trigger_files.join("', `")}'..."
+        warn "Monitoring `#{@trigger_files.join("', `")}'..."
       else
         check_and_act
       end
