@@ -9,7 +9,7 @@ Default log file.
 [Signals]
 .TP
 \fISIGUSR1\fR
-Toggle logging to debug level and log some status information.
+Toggle logging to debug level.
 
 [See also]
 The full documentation for firedown is available on

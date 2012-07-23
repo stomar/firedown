@@ -42,7 +42,7 @@
 #
 # == Signals
 #
-# +SIGUSR1+:: Toggle logging to +debug+ level and log some status information.
+# +SIGUSR1+:: Toggle logging to +debug+ level.
 #
 # == See also
 #
@@ -337,8 +337,6 @@ module Firedown
           exit
         end
         trap('USR1') do
-          message = "#{PROGNAME} running" << (@simulate ? ' in no-act mode.' : '.')
-          @logger.info message
           @logger.level = case @logger.level
                           when :debug
                             :info
