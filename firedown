@@ -265,7 +265,13 @@ module Firedown
         begin
           File.open(@log_file, 'a') {}
         rescue
-          warn "Log file `#{@log_file}' not writable, stderr is used instead."
+          message = "Log file `#{@log_file}' not writable, "
+          if @daemon_mode
+            message << 'you will loose all log messages.'
+          else
+            message << 'stderr is used instead.'
+          end
+          warn message
           @log_to_file = false
         end
       end
