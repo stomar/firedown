@@ -104,15 +104,24 @@ describe Firedown::Logger do
     lambda { @logger.add 'Log message' }.must_output '', /[\d-]+ [\d:]+ \w+: Log message/  # patched
   end
 
-  it 'logs info messages but not debug messages' do
-    lambda { @logger.info 'Info message' }.must_output '', /Info message/  # patched
+  it 'does not log debug messages' do
+    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/  # patched
+    lambda { @logger.info  'Info message'  }.must_output '', /Info message/  # patched
     lambda { @logger.debug 'Debug message' }.must_be_silent
   end
 
   it 'logs all messages in :debug mode' do
     @logger.level = :debug
+    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/   # patched
     lambda { @logger.info  'Info message'  }.must_output '', /Info message/   # patched
     lambda { @logger.debug 'Debug message' }.must_output '', /Debug message/  # patched
+  end
+
+  it 'logs only warn messages in :warn mode' do
+    @logger.level = :warn
+    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/   # patched
+    lambda { @logger.info  'Info message'  }.must_be_silent
+    lambda { @logger.debug 'Debug message' }.must_be_silent
   end
 
 end

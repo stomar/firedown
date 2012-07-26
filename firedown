@@ -33,7 +33,7 @@
 #
 # -l, --[no-]log:: Write messages to log file (\`/var/log/firedown.log') instead of stderr.
 #
-#     --logging-level LEVEL:: Set logging level (+info+, +debug+). Default is +info+.
+#     --logging-level LEVEL:: Set logging level (+warn+, +info+, or +debug+). Default is +info+.
 #
 # -n, --no-act:: Do not bring down the system.
 #                Detects, reports, and removes trigger files, but does not issue a shutdown.
@@ -44,7 +44,7 @@
 #
 # == Signals
 #
-# +SIGUSR1+:: Toggle logging between +info+ and +debug+ level.
+# +SIGUSR1+:: Toggle logging to +debug+ level and back.
 #
 # == See also
 #
@@ -140,8 +140,8 @@ module Firedown
           options[:daemon_mode] = d
         end
 
-        opt.on('--logging-level LEVEL', [:debug, :info],
-               "Set logging level (info, debug). Default is `info'.") do |l|
+        opt.on('--logging-level LEVEL', [:debug, :info, :warn],
+               "Set logging level (warn, info, or debug). Default is `info'.") do |l|
           options[:log_level] = l
         end
 
@@ -179,12 +179,13 @@ module Firedown
   #   logger = Logger.new(device)
   # where +device+ is a path or <tt>'STDERR'</tt>.
   #
-  # Log an info or debug message with
+  # Log a warn, info, or debug message with
+  #   logger.warn  'Warn message.'
   #   logger.info  'Info message.'
   #   logger.debug 'Debug message.'
   #
-  # Default logging level is :info,
-  # change to :debug with
+  # Default logging level is +:info+,
+  # change to e.g. +:debug+ with
   #   logger.level = :debug
   class Logger
 
@@ -206,13 +207,18 @@ module Firedown
       if @log_to_file
         File.open(@log_file, 'a') {|f| f.puts message }
       else
-        warn message
+        $stderr.puts message
       end
+    end
+
+    # Logs a warn message.
+    def warn(message)
+      add message
     end
 
     # Logs an info message.
     def info(message)
-      add message
+      add message  unless @level == :warn
     end
 
     # Logs a debug message.
@@ -282,9 +288,9 @@ module Firedown
         launch_message = "#{PROGNAME} daemon has been launched"
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
-          @logger.info launch_message
-          @logger.info "Monitoring `#{@trigger_files.join("', `")}'..."
-          @logger.info "Logging level is set to `#{@logger.level}'."
+          @logger.add launch_message
+          @logger.add "Monitoring `#{@trigger_files.join("', `")}'..."
+          @logger.add "Logging level is set to `#{@logger.level}'."
           loop do
             check_and_act
             sleep @sleep_time
@@ -316,7 +322,7 @@ module Firedown
         end
 
         if File.exist?(trigger)
-          @logger.info "Trigger invalid (`#{trigger}' could not be removed)."
+          @logger.warn "Invalid trigger (`#{trigger}' could not be removed)."
         else
           shutdown_triggered = true
         end
@@ -342,20 +348,24 @@ module Firedown
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
         trap('TERM') do
-          @logger.info "#{PROGNAME} daemon has been stopped."
+          @logger.add "#{PROGNAME} daemon has been stopped."
           exit
         end
         trap('USR1') do
-          @logger.level = case @logger.level
-                          when :debug
-                            :info
-                          when :info
-                            :debug
-                          end
-          @logger.info "Logging level changed to `#{@logger.level}'."
+          toggle_debug
         end
         yield
       end
+    end
+
+    # Toggle logger to debug level and back.
+    def toggle_debug
+      if @logger.level == @logging_level
+        @logger.level = :debug
+      else
+        @logger.level = @logging_level
+      end
+      @logger.add "Logging level changed to `#{@logger.level}'."
     end
 
     # Prints an error message and exits.
