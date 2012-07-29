@@ -64,64 +64,23 @@ describe Firedown::Optionparser do
 end
 
 
-# monkey patch for Minitest:
-# use regexp instead of string for assert_output / must_output
-module MiniTest
-  module Assertions
-    def assert_output stdout = nil, stderr = nil
-      out, err = capture_io do
-        yield
-      end
-
-      stdout = /\A#{stdout}\Z/  if stdout.class == String
-      stderr = /\A#{stdout}\Z/  if stderr.class == String
-
-      y = assert_match stderr, err, "In stderr" if stderr
-      x = assert_match stdout, out, "In stdout" if stdout
-
-      (!stdout || x) && (!stderr || y)
-    end
-  end
-end
-
-describe Firedown::Logger do
+describe Logger do
 
   before do
-    @logger = Firedown::Logger.new('STDERR')
-  end
-
-  it 'should return the time in the correct format' do
-    time = Time.utc(2012, 6, 26, 20, 0, 0)
-    time_string = Firedown::Logger::time_to_string(time)
-    time_string.must_equal '2012-06-26 20:00:00 UTC'
-  end
-
-  it 'should have a default level' do
-    @logger.level.must_equal :info
+    @logger = Logger.new(STDOUT)
+    @logger.level = Logger::INFO
+    @logger.formatter = proc do |severity, datetime, progname, msg|
+      "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity.rjust(5)}: #{msg}\n"
+    end
   end
 
   it 'can add a log message in the correct format' do
-    lambda { @logger.add 'Log message' }.must_output '', /[\d-]+ [\d:]+ \w+: Log message/  # patched
+    out = @logger.send(:format_message, 'INFO', Time.now, '', 'Log message')
+    out.must_match(/[\d-]+ [\d:\.]+  INFO: Log message/)
   end
 
-  it 'does not log debug messages' do
-    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/  # patched
-    lambda { @logger.info  'Info message'  }.must_output '', /Info message/  # patched
-    lambda { @logger.debug 'Debug message' }.must_be_silent
+  it 'can return the logging level as string' do
+    level = @logger.send(:format_severity, @logger.level)
+    level.must_equal 'INFO'
   end
-
-  it 'logs all messages in :debug mode' do
-    @logger.level = :debug
-    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/   # patched
-    lambda { @logger.info  'Info message'  }.must_output '', /Info message/   # patched
-    lambda { @logger.debug 'Debug message' }.must_output '', /Debug message/  # patched
-  end
-
-  it 'logs only warn messages in :warn mode' do
-    @logger.level = :warn
-    lambda { @logger.warn  'Warn message'  }.must_output '', /Warn message/   # patched
-    lambda { @logger.info  'Info message'  }.must_be_silent
-    lambda { @logger.debug 'Debug message' }.must_be_silent
-  end
-
 end

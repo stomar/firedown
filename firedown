@@ -60,6 +60,7 @@
 
 require 'optparse'
 require 'socket'
+require 'logger'
 
 # This module contains the classes for the +firedown+ tool.
 module Firedown
@@ -173,72 +174,6 @@ module Firedown
   end
 
 
-  # Class for logging messages.
-  #
-  # Create a new logger with
-  #   logger = Logger.new(device)
-  # where +device+ is a path or <tt>'STDERR'</tt>.
-  #
-  # Log a warn, info, or debug message with
-  #   logger.warn  'Warn message.'
-  #   logger.info  'Info message.'
-  #   logger.debug 'Debug message.'
-  #
-  # Default logging level is +:info+,
-  # change to e.g. +:debug+ with
-  #   logger.level = :debug
-  class Logger
-
-    attr_accessor :level
-
-    def initialize(device)
-      if device == 'STDERR'
-        @log_to_file = false
-      else
-        @log_to_file = true
-        @log_file = device
-      end
-      @level = :info
-    end
-
-    # Writes a log entry with time stamp (to stderr or to file).
-    def add(message)
-      message = self.class.time_to_string(Time.now) << ': ' << message
-      if @log_to_file
-        File.open(@log_file, 'a') {|f| f.puts message }
-      else
-        $stderr.puts message
-      end
-    end
-
-    # Logs a warn message.
-    def warn(message)
-      add message
-    end
-
-    # Logs an info message.
-    def info(message)
-      add message  unless @level == :warn
-    end
-
-    # Logs a debug message.
-    def debug(message)
-      add message  if @level == :debug
-    end
-
-    # Returns a formatted string for a Time object.
-    def self.time_to_string(time)
-      time_string = if RUBY_VERSION =~ /1\.8/
-                      time.strftime('%Y-%m-%d %H:%M:%S ') << time.zone
-                    else
-                      time.strftime('%Y-%m-%d %H:%M:%S %Z')
-                    end
-
-      time_string
-    end
-  end
-
-
   # The main program. It's run! method is called
   # if the script is run from the command line.
   # It parses the command line arguments and does the job.
@@ -258,7 +193,14 @@ module Firedown
       @daemon_mode = options[:daemon_mode]
       @log_to_file = options[:log]
       @log_file = options[:log_file]
-      @logging_level = options[:log_level]
+      @logging_level = case options[:log_level]
+                       when :debug
+                         Logger::DEBUG
+                       when :info
+                         Logger::INFO
+                       when :warn
+                         Logger::WARN
+                       end
 
       # make sure log file exists and is writable by user
       if @log_to_file
@@ -276,9 +218,12 @@ module Firedown
         end
       end
 
-      device = @log_to_file ? @log_file : 'STDERR'
+      device = @log_to_file ? @log_file : STDERR
       @logger = Logger.new(device)
       @logger.level = @logging_level
+      @logger.formatter = proc do |severity, datetime, progname, msg|
+        "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity.rjust(5)}: #{msg}\n"
+      end
 
       @hostname = Socket::gethostname
       @hostname = 'all'  if (@hostname.empty? or @hostname.nil?)
@@ -294,9 +239,9 @@ module Firedown
         launch_message = "#{PROGNAME} daemon has been launched"
         launch_message << (@simulate ? ' in no-act mode.' : '.')
         daemonize do
-          @logger.add launch_message
-          @logger.add "Monitoring `#{@trigger_files.join("', `")}'..."
-          @logger.add "Logging level is set to `#{@logger.level}'."
+          @logger.unknown launch_message
+          @logger.unknown "Monitoring `#{@trigger_files.join("', `")}'..."
+          @logger.unknown "Logging level is set to `#{logging_level_as_string}'."
           loop do
             check_and_act
             sleep @sleep_time
@@ -354,7 +299,7 @@ module Firedown
         STDOUT.reopen('/dev/null', 'a')
         STDERR.reopen('/dev/null', 'a')
         trap('TERM') do
-          @logger.add "#{PROGNAME} daemon has been stopped."
+          @logger.unknown "#{PROGNAME} daemon has been stopped."
           exit
         end
         trap('USR1') do
@@ -367,11 +312,16 @@ module Firedown
     # Toggle logger to debug level and back.
     def toggle_debug
       if @logger.level == @logging_level
-        @logger.level = :debug
+        @logger.level = Logger::DEBUG
       else
         @logger.level = @logging_level
       end
-      @logger.add "Logging level changed to `#{@logger.level}'."
+      @logger.unknown "Logging level changed to `#{logging_level_as_string}'."
+    end
+
+    # Return the logging level as string.
+    def logging_level_as_string
+      @logger.send(:format_severity, @logger.level)
     end
 
     # Prints an error message and exits.
