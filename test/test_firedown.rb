@@ -69,14 +69,12 @@ describe Logger do
   before do
     @logger = Logger.new(STDOUT)
     @logger.level = Logger::INFO
-    @logger.formatter = proc do |severity, datetime, progname, msg|
-      "#{datetime.strftime('%Y-%m-%d %H:%M:%S')} #{severity.rjust(5)}: #{msg}\n"
-    end
+    @logger.formatter = Firedown::Helper::log_formatter
   end
 
   it 'can add a log message in the correct format' do
     out = @logger.send(:format_message, 'INFO', Time.now, '', 'Log message')
-    out.must_match(/[\d-]+ [\d:\.]+  INFO: Log message/)
+    out.must_match(/[\d-]+ [\d:]+\.\d{6}  INFO: Log message/)
   end
 
   it 'can return the logging level as string' do
