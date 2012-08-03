@@ -102,7 +102,8 @@ module Firedown
         :log         => false,
         :log_file    => "/var/log/#{PROGNAME}.log",
         :log_level   => :info,
-        :simulate    => false
+        :simulate    => false,
+        :sleep_time  => 15
       }
 
       opt_parser = OptionParser.new do |opt|
@@ -145,7 +146,7 @@ module Firedown
 
         opt.on('-d', '--[no-]daemon',
                'Detach and run in the background (implies --log).',
-               'Checks for a trigger file every 15 seconds.') do |d|
+               "Checks for a trigger file every #{options[:sleep_time]} seconds.") do |d|
           options[:daemon_mode] = d
         end
 
@@ -255,7 +256,7 @@ module Firedown
 
       @trigger_files = options[:directories].map {|dir| "#{dir}/#{PROGNAME}.#{@hostname}" }
 
-      @sleep_time = 15  # checks every ... seconds
+      @sleep_time = options[:sleep_time]
     end
 
     # The main program.

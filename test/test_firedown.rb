@@ -15,7 +15,8 @@ describe Firedown::Optionparser do
       :log         => false,
       :log_file    => '/var/log/firedown.log',
       :log_level   => :info,
-      :simulate    => false
+      :simulate    => false,
+      :sleep_time  => 15
     }
     options.must_equal expected
   end
