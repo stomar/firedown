@@ -57,6 +57,14 @@
 #
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 #
+#--
+# == TODO
+#
+# -i, --interval NUMBER:: Set polling interval for daemon mode (in seconds).
+#
+# --exec-delay NUMBER:: Wait NUMBER minutes before shutdown.
+#
+#++
 
 require 'optparse'
 require 'socket'
