@@ -198,6 +198,8 @@ module Firedown
 
     ERRORCODE = {:general => 1, :usage => 2}
 
+    SHUTDOWN_MESSAGE = "This shutdown has been triggered by #{PROGNAME}."
+
     def initialize
       # parse options
       begin
@@ -300,7 +302,7 @@ module Firedown
         @logger.info 'This is a simulated shutdown!'
       else
         @logger.info 'Shutting down in 60 seconds!'
-        system('shutdown -h +1')
+        system("shutdown -h +1 '#{SHUTDOWN_MESSAGE}'")
       end
     end
 
