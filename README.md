@@ -99,7 +99,7 @@ Requirements
 Documentation
 -------------
 
-`firedown --help` prints a brief help message.
+Use `firedown --help` to display a brief help message.
 
 If you installed `firedown` using `rake install` you can read
 its man page with `man firedown`.

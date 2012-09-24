@@ -3,53 +3,18 @@
 #
 # firedown - file-based (remote) shutdown
 #
-# == Synopsis
-#
-#    firedown [options] directories
-#
 # == Description
 #
 # +firedown+ is a command line tool
 # that enables a remote shutdown of a Linux system
 # via Dropbox or other file synchronization services.
 #
-# +firedown+ monitors a specified directory (or several directories)
-# on the system for the presence of a trigger file or directory.
-# If a trigger is found, +firedown+ issues a shutdown.
-#
-# The monitored directory might be synchronized via remote services
-# like Dropbox or Ubuntu One, thus enabling a remotely triggered
-# shutdown of the system.
-#
-# Bring down the system by creating +firedown.host+
-# as empty trigger file or as empty directory in any of the
-# monitored directories, where +host+ is the hostname
-# of the system you want to bring down.
-#
-# == Options
-#
-# -d, --[no-]daemon:: Detach and run in the background (implies --log).
-#                     Checks for a trigger file every 15 seconds.
-#
-# -l, --[no-]log:: Write messages to log file (\`/var/log/firedown.log') instead of stderr.
-#
-#     --logging-level LEVEL:: Set logging level (+warn+, +info+, or +debug+). Default is +info+.
-#
-# -n, --no-act:: Do not bring down the system.
-#                Detects, reports, and removes trigger files, but does not issue a shutdown.
-#
-# == Files
-#
-# +/var/log/firedown.log+:: Default log file.
-#
-# == Signals
-#
-# +SIGUSR1+:: Toggle logging to +debug+ level and back.
-#
 # == See also
 #
+# Use <tt>firedown --help</tt> to display a brief help message.
+#
 # The full documentation for +firedown+ is available on the
-# project home page: <https://github.com/stomar/firedown/>
+# project home page.
 #
 # == Author
 #
