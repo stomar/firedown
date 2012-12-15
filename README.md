@@ -33,7 +33,7 @@ Set up `firedown`:
         firedown --daemon /path/to/Dropbox /path/to/Ubuntu\ One
 
     (Depending on the search path for root on your machine and on how you
-    installed `firedown`, you might need to invoke `firedown` using it's
+    installed `firedown`, you might need to invoke `firedown` using its
     full path.)
 
 Bring down the system by creating `firedown.host` as empty trigger file
@@ -84,7 +84,7 @@ You can either
 
 - put `firedown` manually into the search path of root,
 
-- put `firedown` anywhere and invoke it using it's full path.
+- put `firedown` anywhere and invoke it using its full path.
 
 Requirements
 ------------
