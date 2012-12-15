@@ -5,7 +5,7 @@
 
 require 'minitest/spec'
 require 'minitest/autorun'
-load 'firedown'
+load 'firedown'  unless defined?(Firedown)
 
 
 describe Firedown::Optionparser do
