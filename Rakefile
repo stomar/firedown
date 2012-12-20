@@ -8,6 +8,7 @@ load 'firedown'
 
 PROGNAME = Firedown::PROGNAME
 HOMEPAGE = Firedown::HOMEPAGE
+TAGLINE  = Firedown::TAGLINE
 
 BINDIR = '/usr/local/sbin'
 MANDIR = '/usr/local/man/man1'
@@ -57,7 +58,7 @@ desc 'Create man page'
 task :man => [MANPAGE]
 
 file MANPAGE => [BINARY, H2MFILE] do
-  sh "#{HELP2MAN} --no-info --include=#{H2MFILE} -o #{MANPAGE} ./#{BINARY}"
+  sh "#{HELP2MAN} --no-info --name='#{TAGLINE}' --include=#{H2MFILE} -o #{MANPAGE} ./#{BINARY}"
   sh "#{SED} -i '/\.PP/{N;s/\.PP\\nOptions/.SH OPTIONS/}' #{MANPAGE}"
   sh "#{SED} -i 's/^License GPL/.br\\nLicense GPL/;s/There is NO WARRANTY/.br\\nThere is NO WARRANTY/' #{MANPAGE}"
   sh "#{SED} -i 's!%HOMEPAGE%!#{HOMEPAGE}!g' #{MANPAGE}"

@@ -1,6 +1,3 @@
-[Name]
-firedown \- file-based (remote) shutdown
-
 [Files]
 .TP
 \fI/var/log/firedown.log\fR
