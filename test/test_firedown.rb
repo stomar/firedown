@@ -77,8 +77,10 @@ describe Logger do
   end
 
   it 'can add a log message in the correct format' do
-    out = @logger.send(:format_message, 'INFO', Time.now, '', 'Log message')
-    out.must_match(/[\d-]+ [\d:]+\.\d{6}  INFO: Log message/)
+    time = Time.utc(2012, 11, 10, 13, 14, 15, 123456)
+    message = @logger.send(:format_message,
+                           'INFO', time, 'ignored progname', 'Log message')
+    message.must_equal "2012-11-10 13:14:15.123456  INFO: Log message\n"
   end
 
   it 'can return the logging level as string' do
