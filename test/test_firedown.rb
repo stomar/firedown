@@ -1,4 +1,3 @@
-#!/usr/bin/ruby -w
 # test_firedown.rb: Unit tests for the firedown script.
 #
 # Copyright (C) 2012 Marcus Stollsteimer
