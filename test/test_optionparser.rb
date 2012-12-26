@@ -1,4 +1,4 @@
-# test_firedown.rb: Unit tests for the firedown script.
+# test_optionparser.rb: Unit tests for the firedown script.
 #
 # Copyright (C) 2012 Marcus Stollsteimer
 
