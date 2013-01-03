@@ -1,6 +1,6 @@
 # test_optionparser.rb: Unit tests for the firedown script.
 #
-# Copyright (C) 2012 Marcus Stollsteimer
+# Copyright (C) 2012-2013 Marcus Stollsteimer
 
 require 'minitest/spec'
 require 'minitest/autorun'
