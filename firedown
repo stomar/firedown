@@ -209,7 +209,7 @@ module Firedown
       @logger.formatter = Helper::log_formatter
 
       @hostname = Socket::gethostname
-      @hostname = 'all'  if (@hostname.nil? or @hostname.empty?)
+      @hostname = 'all'  if (@hostname.nil? || @hostname.empty?)
 
       @trigger_files = options[:directories].map {|dir| "#{dir}/#{PROGNAME}.#{@hostname}" }
 
