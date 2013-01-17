@@ -29,8 +29,8 @@ H2MFILE = 'firedown.h2m'
 task :default => [:test]
 
 Rake::TestTask.new do |t|
-  t.libs << '.'
   t.pattern = 'test/**/test_*.rb'
+  t.libs   << '.'
   t.ruby_opts << '-rubygems'
   t.verbose = true
   t.warning = true
