@@ -35,10 +35,12 @@ module Firedown
   HOMEPAGE  = 'https://github.com/stomar/firedown/'
   TAGLINE   = 'file-based (remote) shutdown'
 
-  COPYRIGHT = "Copyright (C) 2012-2013 Marcus Stollsteimer.\n" +
-              "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n" +
-              "This is free software: you are free to change and redistribute it.\n" +
-              "There is NO WARRANTY, to the extent permitted by law."
+  COPYRIGHT = <<-copyright.gsub(/^ +/, '')
+    Copyright (C) 2012-2013 Marcus Stollsteimer.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.
+  copyright
 
   # Parser for the command line options.
   # The class method parse! does the job.
@@ -65,26 +67,26 @@ module Firedown
 
       opt_parser = OptionParser.new do |opt|
         opt.banner = "Usage: #{PROGNAME} [options] directories"
-        opt.separator ''
-        opt.separator 'firedown is a command line tool'
-        opt.separator 'that enables a remote shutdown of a Linux system'
-        opt.separator 'via Dropbox or other file synchronization services.'
-        opt.separator ''
-        opt.separator 'firedown monitors a specified directory (or several directories)'
-        opt.separator 'on the system for the presence of a trigger file or directory.'
-        opt.separator 'If a trigger is found, firedown issues a shutdown.'
-        opt.separator ''
-        opt.separator 'The monitored directory might be synchronized via remote services'
-        opt.separator 'like Dropbox or Ubuntu One, thus enabling a remotely triggered'
-        opt.separator 'shutdown of the system.'
-        opt.separator ''
-        opt.separator "Bring down the system by creating `firedown.host'"
-        opt.separator 'as empty trigger file or as empty directory in any of the'
-        opt.separator "monitored directories, where `host' is the hostname"
-        opt.separator 'of the system you want to bring down.'
-        opt.separator ''
-        opt.separator 'Options'
-        opt.separator ''
+        opt.separator %q{
+          firedown is a command line tool
+          that enables a remote shutdown of a Linux system
+          via Dropbox or other file synchronization services.
+
+          firedown monitors a specified directory (or several directories)
+          on the system for the presence of a trigger file or directory.
+          If a trigger is found, firedown issues a shutdown.
+
+          The monitored directory might be synchronized via remote services
+          like Dropbox or Ubuntu One, thus enabling a remotely triggered
+          shutdown of the system.
+
+          Bring down the system by creating `firedown.host'
+          as empty trigger file or as empty directory in any of the
+          monitored directories, where `host' is the hostname
+          of the system you want to bring down.
+
+          Options
+        }.gsub(/^ +/, '')
 
         # process --version and --help first,
         # exit successfully (GNU Coding Standards)
