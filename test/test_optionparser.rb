@@ -57,7 +57,6 @@ describe Firedown::Optionparser do
   end
 
   it 'should not accept wrong number of arguments' do
-    lambda { Firedown::Optionparser.parse!(['']) }.must_raise ArgumentError
     lambda { Firedown::Optionparser.parse!([]) }.must_raise ArgumentError
   end
 
