@@ -77,8 +77,7 @@ module Firedown
           If a trigger is found, firedown issues a shutdown.
 
           The monitored directory might be synchronized via remote services
-          like Dropbox or Ubuntu One, thus enabling a remotely triggered
-          shutdown of the system.
+          like Dropbox, thus enabling a remotely triggered shutdown of the system.
 
           Bring down the system by creating `firedown.host'
           as empty trigger file or as empty directory in any of the

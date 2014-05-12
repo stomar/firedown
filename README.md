@@ -10,8 +10,7 @@ on the system for the presence of a trigger file or directory.
 If a trigger is found, `firedown` issues a shutdown.
 
 The monitored directory might be synchronized via remote services
-like Dropbox or Ubuntu One, thus enabling a remotely triggered
-shutdown of the system.
+like Dropbox, thus enabling a remotely triggered shutdown of the system.
 
 Usage
 -----
@@ -25,12 +24,12 @@ Set up `firedown`:
     For example, to check every minute for the trigger file,
     include a line similar to this in `/etc/crontab`:
 
-        * *   * * *   root   firedown -l /path/to/Dropbox /path/to/Ubuntu\ One
+        * *   * * *   root   firedown -l /path/to/monitored/directory
 
 2.  Alternatively, start `firedown` as a daemon process
     (again with root privileges):
 
-        firedown --daemon /path/to/Dropbox /path/to/Ubuntu\ One
+        firedown --daemon /path/to/monitored/directory
 
     (Depending on the search path for root on your machine and on how you
     installed `firedown`, you might need to invoke `firedown` using its
