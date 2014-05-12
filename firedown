@@ -132,7 +132,6 @@ module Firedown
       options[:log] = true  if options[:daemon_mode]
 
       # only directories should be left in argv
-      argv.delete('')
       raise(ArgumentError, 'wrong number of arguments')  if argv.size < 1
 
       options[:directories] = argv.pop(argv.size).map {|dir| File.expand_path(dir) }
