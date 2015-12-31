@@ -84,7 +84,7 @@ module Firedown
           monitored directories, where `host' is the hostname
           of the system you want to bring down.
 
-          Options
+          Options:
         }.gsub(/^ +/, '')
 
         # process --version and --help first,
