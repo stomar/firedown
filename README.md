@@ -111,7 +111,7 @@ Report bugs on the `firedown` home page: <https://github.com/stomar/firedown/>
 License
 -------
 
-Copyright &copy; 2012-2015 Marcus Stollsteimer
+Copyright &copy; 2012-2016 Marcus Stollsteimer
 
 `firedown` is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 3 or later (GPLv3+),
